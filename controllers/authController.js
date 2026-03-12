@@ -45,10 +45,21 @@ exports.register = async (req, res) => {
         const token = generateToken(user._id);
         req.session.token = token;
 
-        res.status(201).json({
-            success: true,
-            message: 'Registration successful',
-            role: user.role
+        // Save session before responding
+        req.session.save((err) => {
+            if (err) {
+                console.error('Session save error:', err);
+                return res.status(500).json({ 
+                    success: false, 
+                    message: 'Session save failed' 
+                });
+            }
+
+            res.status(201).json({
+                success: true,
+                message: 'Registration successful',
+                role: user.role
+            });
         });
     } catch (error) {
         console.error('Register error:', error.message);
@@ -94,10 +105,21 @@ exports.login = async (req, res) => {
         const token = generateToken(user._id);
         req.session.token = token;
 
-        res.json({
-            success: true,
-            message: 'Login successful',
-            role: user.role
+        // Save session before responding
+        req.session.save((err) => {
+            if (err) {
+                console.error('Session save error:', err);
+                return res.status(500).json({ 
+                    success: false, 
+                    message: 'Session save failed' 
+                });
+            }
+
+            res.json({
+                success: true,
+                message: 'Login successful',
+                role: user.role
+            });
         });
     } catch (error) {
         console.error('Login error:', error);
