@@ -91,22 +91,30 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    credentials: 'include', // IMPORTANT: Include cookies in request
                     body: JSON.stringify(formData)
                 });
 
                 const data = await response.json();
+                console.log('Registration response:', data); // Debug log
 
                 if (data.success) {
                     alert('Registration successful!');
-                    if (data.role === 'teacher') {
-                        window.location.href = '/teacher/dashboard';
-                    } else {
-                        window.location.href = '/student/dashboard';
-                    }
+                    // Add small delay to ensure session is saved
+                    setTimeout(() => {
+                        if (data.role === 'teacher') {
+                            window.location.href = '/teacher/dashboard';
+                        } else if (data.role === 'student') {
+                            window.location.href = '/student/dashboard';
+                        } else {
+                            window.location.href = '/admin/dashboard';
+                        }
+                    }, 500);
                 } else {
-                    alert(data.message);
+                    alert('Registration failed: ' + data.message);
                 }
             } catch (error) {
+                console.error('Registration error:', error);
                 alert('Registration failed. Please try again.');
             }
         });
