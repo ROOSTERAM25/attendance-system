@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-brand">👨‍🏫 Teacher Portal</h1>
+            <div class="nav-user">
+                <span>Welcome, <%= user.name %></span>
+                <a href="/auth/logout" class="btn btn-small">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Active Session Header (shown if session is active) -->
+        <div id="activeSessionHeader" class="session-header" style="display: none;">
+            <div class="session-status active">
+                <div class="status-content">
+                    <h2>🔴 Active Session</h2>
+                    <p id="sessionInfo"></p>
+                </div>
+                <div class="status-actions">
+                    <button onclick="goToActiveSession()" class="btn btn-secondary">Go to Session</button>
+                    <button onclick="endActiveSession()" class="btn btn-danger">End Session</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>Start Attendance Session</h2>
+            <form id="startSessionForm">
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <input type="text" id="subject" name="subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="className">Class</label>
+                    <input type="text" id="className" name="className" placeholder="e.g., CSE-3" required>
+                </div>
+                <div class="form-group">
+                    <label for="section">Section</label>
+                    <input type="text" id="section" name="section" placeholder="e.g., A" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Start Session</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Check for active session on page load
+        async function checkActiveSession() {
+            try {
+                const response = await fetch('/teacher/session/active');
+                
+                if (response.status === 200) {
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        displayActiveSession(data.session);
+                    }
+                } else if (response.status === 404) {
+                    // No active session, hide header
+                    document.getElementById('activeSessionHeader').style.display = 'none';
+                }
+            } catch (error) {
+                console.log('No active session or error:', error);
+            }
+        }
+
+        function displayActiveSession(session) {
+            const header = document.getElementById('activeSessionHeader');
+            const sessionInfo = document.getElementById('sessionInfo');
+            
+            sessionInfo.innerHTML = `
+                <strong>${session.subject}</strong> - 
+                Class: ${session.class}, Section: ${session.section}
+            `;
+            
+            header.style.display = 'block';
+            
+            // Store session ID for end session function
+            header.dataset.sessionId = session._id;
+        }
+
+        function goToActiveSession() {
+            const sessionId = document.getElementById('activeSessionHeader').dataset.sessionId;
+            window.location.href = `/teacher/session/active`;
+        }
+
+        async function endActiveSession() {
+            if (!confirm('Are you sure you want to end the active session?')) {
+                return;
+            }
+
+            const sessionId = document.getElementById('activeSessionHeader').dataset.sessionId;
+
+            try {
+                const response = await fetch(`/teacher/session/${sessionId}/end`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Session ended successfully');
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('Failed to end session');
+            }
+        }
+
+        document.getElementById('startSessionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                subject: document.getElementById('subject').value,
+                className: document.getElementById('className').value,
+                section: document.getElementById('section').value
+            };
+
+            try {
+                const response = await fetch('/teacher/session/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.href = '/teacher/session/active';
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('Failed to start session. Please try again.');
+            }
+        });
+
+        // Check for active session when page loads
+        checkActiveSession();
+    </script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Session</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-brand">👨‍🏫 Active Session</h1>
+            <div class="nav-user">
+                <span><%= user.name %></span>
+                <a href="/auth/logout" class="btn btn-small">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="session-info">
+            <h2><%= session.subject %></h2>
+            <p>Class: <%= session.class %> - Section: <%= session.section %></p>
+        </div>
+
+        <div class="qr-container">
+            <h3>Students Scan This QR Code</h3>
+            <div id="qrDisplay"></div>
+            <p class="qr-timer">Refreshing in: <span id="countdown">10</span>s</p>
+        </div>
+
+        <div class="session-actions">
+            <button onclick="viewAttendance()" class="btn btn-secondary">View Attendance</button>
+            <button onclick="exportExcel()" class="btn btn-success" id="exportBtn" style="display: none;">📥 Export to Excel</button>
+            <button onclick="endSession()" class="btn btn-danger" id="endBtn">End Session</button>
+        </div>
+    </main>
+
+    <script>
+        const sessionId = '<%= session._id %>';
+        const refreshInterval = <%= process.env.QR_REFRESH_INTERVAL || 10000 %>;
+        let countdown = refreshInterval / 1000;
+
+        async function refreshQR() {
+            try {
+                const response = await fetch(`/teacher/session/${sessionId}/refresh-qr`);
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('qrDisplay').innerHTML = 
+                        `<img src="${data.qrCodeImage}" alt="QR Code" class="qr-code">`;
+                    countdown = refreshInterval / 1000;
+                }
+            } catch (error) {
+                console.error('Failed to refresh QR:', error);
+            }
+        }
+
+        function updateCountdown() {
+            document.getElementById('countdown').textContent = countdown;
+            countdown--;
+
+            if (countdown < 0) {
+                refreshQR();
+            }
+        }
+
+        async function endSession() {
+            if (!confirm('Are you sure you want to end this session?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/teacher/session/${sessionId}/end`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Show export button
+                    document.getElementById('endBtn').style.display = 'none';
+                    document.getElementById('exportBtn').style.display = 'inline-block';
+                    alert('Session ended successfully. You can now export attendance data to Excel.');
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('Failed to end session');
+            }
+        }
+
+        function exportExcel() {
+            window.location.href = `/teacher/session/${sessionId}/export`;
+        }
+
+        function viewAttendance() {
+            window.location.href = `/teacher/session/${sessionId}/attendance`;
+        }
+
+        // Initialize
+        refreshQR();
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .admin-nav {
+            background: #2c3e50;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .admin-nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 1.5rem;
+            padding: 0.5rem 1rem;
+            display: inline-block;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .admin-nav a:hover {
+            background: #667eea;
+        }
+        .admin-nav a.active {
+            background: #667eea;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-card h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .stat-card .label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-brand">🔐 Admin Panel</h1>
+            <div class="nav-user">
+                <a href="/auth/logout" class="btn btn-small">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-nav">
+        <a href="/admin/dashboard" class="active">📊 Dashboard</a>
+        <a href="/admin/users">👥 Users</a>
+        <a href="/admin/sessions">📅 Sessions</a>
+        <a href="/admin/attendance">✅ Attendance</a>
+    </div>
+
+    <main class="container">
+        <h2>📊 System Overview</h2>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Users</h3>
+                <div class="number"><%= totalUsers %></div>
+                <div class="label">Registered Users</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Teachers</h3>
+                <div class="number"><%= totalTeachers %></div>
+                <div class="label">Total Teachers</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Students</h3>
+                <div class="number"><%= totalStudents %></div>
+                <div class="label">Total Students</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Sessions</h3>
+                <div class="number"><%= totalSessions %></div>
+                <div class="label">Total Sessions</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Active Sessions</h3>
+                <div class="number"><%= activeSessions %></div>
+                <div class="label">Currently Running</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Attendance Records</h3>
+                <div class="number"><%= totalAttendance %></div>
+                <div class="label">Total Records</div>
+            </div>
+        </div>
+
+        <div style="background: white; padding: 2rem; border-radius: 10px; margin-top: 2rem;">
+            <h3>Quick Links</h3>
+            <ul style="line-height: 2; margin-left: 1rem;">
+                <li><a href="/admin/users">View All Users (Teachers & Students with passwords)</a></li>
+                <li><a href="/admin/users-json">View Users as JSON (API)</a></li>
+                <li><a href="/admin/sessions">View All Sessions</a></li>
+                <li><a href="/admin/attendance">View All Attendance Records</a></li>
+            </ul>
+        </div>
+    </main>
+</body>
+</html>

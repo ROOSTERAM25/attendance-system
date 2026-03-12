@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Attendance Records</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .admin-nav {
+            background: #2c3e50;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .admin-nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 1.5rem;
+            padding: 0.5rem 1rem;
+            display: inline-block;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .admin-nav a:hover {
+            background: #667eea;
+        }
+        .admin-nav a.active {
+            background: #667eea;
+        }
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #667eea;
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .badge-present {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .summary-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 5px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .summary-card h3 {
+            color: #667eea;
+            margin: 0 0 0.5rem 0;
+            font-size: 0.9rem;
+        }
+        .summary-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-brand">✅ All Attendance Records</h1>
+            <div class="nav-user">
+                <a href="/auth/logout" class="btn btn-small">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-nav">
+        <a href="/admin/dashboard">📊 Dashboard</a>
+        <a href="/admin/users">👥 Users</a>
+        <a href="/admin/sessions">📅 Sessions</a>
+        <a href="/admin/attendance" class="active">✅ Attendance</a>
+    </div>
+
+    <main class="container">
+        <div class="summary">
+            <div class="summary-card">
+                <h3>Total Records</h3>
+                <div class="number"><%= totalRecords %></div>
+            </div>
+            <div class="summary-card">
+                <h3>Present</h3>
+                <div class="number" style="color: #28a745;"><%= presentCount %></div>
+            </div>
+            <div class="summary-card">
+                <h3>Rejected</h3>
+                <div class="number" style="color: #dc3545;"><%= rejectedCount %></div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h3>📋 All Attendance Records</h3>
+            <% if (records.length === 0) { %>
+                <p>No attendance records found</p>
+            <% } else { %>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Roll Number</th>
+                            <th>Subject</th>
+                            <th>Class - Section</th>
+                            <th>Status</th>
+                            <th>Marked At</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% records.forEach(record => { %>
+                            <tr>
+                                <td><strong><%= record.student.name %></strong></td>
+                                <td><%= record.student.rollNumber %></td>
+                                <td><%= record.session.subject %></td>
+                                <td><%= record.session.class %> - <%= record.session.section %></td>
+                                <td>
+                                    <span class="badge badge-<%= record.status %>">
+                                        <%= record.status.toUpperCase() %>
+                                    </span>
+                                </td>
+                                <td><%= new Date(record.markedAt).toLocaleString() %></td>
+                                <td><%= record.rejectionReason || '-' %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } %>
+        </div>
+    </main>
+</body>
+</html>

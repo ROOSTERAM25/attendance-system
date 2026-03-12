@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Scanner</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        .camera-warning {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .file-upload-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-top: 2rem;
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            margin: 1rem 0;
+        }
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        .file-input-label {
+            background: #667eea;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+        .file-input-label:hover {
+            background: #5568d3;
+        }
+        .scanner-status {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            text-align: center;
+            font-weight: 600;
+        }
+        .status-info {
+            background: #cfe2ff;
+            color: #084298;
+        }
+        .status-success {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #842029;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-brand">📸 QR Scanner</h1>
+            <div class="nav-user">
+                <a href="/student/dashboard" class="btn btn-small">Back to Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="camera-warning" id="cameraWarning">
+            ⚠️ Camera access requires HTTPS or localhost. Use the file upload option below as an alternative.
+        </div>
+
+        <div id="scanner-container">
+            <div id="reader"></div>
+            <div id="status" class="scanner-status"></div>
+        </div>
+
+        <div class="file-upload-section">
+            <h3>📷 Alternative: Upload QR Code Image</h3>
+            <p>If camera is not working, you can upload a QR code image:</p>
+            <div class="file-input-wrapper">
+                <input type="file" id="fileInput" accept="image/*" />
+                <label for="fileInput" class="file-input-label">Choose Image</label>
+            </div>
+            <div id="fileStatus"></div>
+        </div>
+    </main>
+
+    <script>
+        let html5QrcodeScanner;
+        let isProcessing = false;
+        let cameraInitialized = false;
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `scanner-status status-${type}`;
+        }
+
+        function showFileStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('fileStatus');
+            statusDiv.textContent = message;
+            statusDiv.className = `scanner-status status-${type}`;
+        }
+
+        function getLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocation is not supported'));
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    position => resolve(position.coords),
+                    error => reject(error),
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            });
+        }
+
+        async function processQRCode(decodedText) {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            try {
+                showStatus('QR Code detected! Getting location...', 'info');
+
+                // Parse QR data
+                const qrData = JSON.parse(decodedText);
+
+                // Get location
+                const coords = await getLocation();
+
+                showStatus('Marking attendance...', 'info');
+
+                // Submit attendance
+                const response = await fetch('/student/attendance/mark', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        sessionId: qrData.sessionId,
+                        qrCode: qrData.qrCode,
+                        latitude: coords.latitude,
+                        longitude: coords.longitude
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus(data.message, 'success');
+                    if (cameraInitialized) {
+                        html5QrcodeScanner.clear();
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.href = '/student/dashboard';
+                    }, 2000);
+                } else {
+                    showStatus(data.message, 'error');
+                    isProcessing = false;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('Error: ' + error.message, 'error');
+                isProcessing = false;
+            }
+        }
+
+        async function onScanSuccess(decodedText) {
+            await processQRCode(decodedText);
+        }
+
+        // Try to initialize camera scanner
+        try {
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader",
+                { 
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                }
+            );
+
+            html5QrcodeScanner.render(onScanSuccess);
+            cameraInitialized = true;
+            showStatus('Ready to scan. Point camera at QR code', 'info');
+        } catch (error) {
+            console.warn('Camera not available:', error);
+            document.getElementById('cameraWarning').style.display = 'block';
+            showStatus('Camera not available - use file upload instead', 'error');
+        }
+
+        // File upload handler
+        document.getElementById('fileInput').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            showFileStatus('Processing image...', 'info');
+
+            try {
+                const reader = new FileReader();
+                reader.onload = async function(event) {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        const img = new Image();
+                        img.onload = async function() {
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0);
+                            
+                            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                            const code = await Html5Qrcode.toDataURL(canvas);
+                            
+                            Html5Qrcode.getCameras().then(cameras => {
+                                const qrcode = new Html5Qrcode("reader");
+                                qrcode.scanFile(file, true)
+                                    .then(decodedText => {
+                                        showFileStatus('QR Code found!', 'success');
+                                        processQRCode(decodedText);
+                                    })
+                                    .catch(error => {
+                                        showFileStatus('No QR code found in image', 'error');
+                                    });
+                            });
+                        };
+                        img.src = event.target.result;
+                    } catch (error) {
+                        showFileStatus('Error processing image: ' + error.message, 'error');
+                    }
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                showFileStatus('Error: ' + error.message, 'error');
+            }
+        });
+    </script>
+</body>
+</html>

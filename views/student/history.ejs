@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance History</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-brand">📋 My Attendance</h1>
+            <div class="nav-user">
+                <span><%= user.name %></span>
+                <a href="/student/dashboard" class="btn btn-small">Dashboard</a>
+                <a href="/auth/logout" class="btn btn-small">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="table-container">
+            <h2>Attendance History</h2>
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Class</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (records.length === 0) { %>
+                        <tr>
+                            <td colspan="5" style="text-align: center;">No attendance records found</td>
+                        </tr>
+                    <% } else { %>
+                        <% records.forEach(record => { %>
+                            <tr>
+                                <td><%= record.subject %></td>
+                                <td><%= record.class %> - <%= record.section %></td>
+                                <td><%= new Date(record.markedAt).toLocaleDateString() %></td>
+                                <td><%= new Date(record.markedAt).toLocaleTimeString() %></td>
+                                <td>
+                                    <span class="status-badge status-<%= record.status %>">
+                                        <%= record.status.toUpperCase() %>
+                                    </span>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>

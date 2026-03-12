@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Sessions</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .admin-nav {
+            background: #2c3e50;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .admin-nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 1.5rem;
+            padding: 0.5rem 1rem;
+            display: inline-block;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .admin-nav a:hover {
+            background: #667eea;
+        }
+        .admin-nav a.active {
+            background: #667eea;
+        }
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #667eea;
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .badge-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge-ended {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .summary-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 5px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .summary-card h3 {
+            color: #667eea;
+            margin: 0 0 0.5rem 0;
+            font-size: 0.9rem;
+        }
+        .summary-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-brand">📅 All Sessions</h1>
+            <div class="nav-user">
+                <a href="/auth/logout" class="btn btn-small">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-nav">
+        <a href="/admin/dashboard">📊 Dashboard</a>
+        <a href="/admin/users">👥 Users</a>
+        <a href="/admin/sessions" class="active">📅 Sessions</a>
+        <a href="/admin/attendance">✅ Attendance</a>
+    </div>
+
+    <main class="container">
+        <div class="summary">
+            <div class="summary-card">
+                <h3>Total Sessions</h3>
+                <div class="number"><%= totalSessions %></div>
+            </div>
+            <div class="summary-card">
+                <h3>Active Sessions</h3>
+                <div class="number"><%= activeSessions %></div>
+            </div>
+            <div class="summary-card">
+                <h3>Ended Sessions</h3>
+                <div class="number"><%= totalSessions - activeSessions %></div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h3>📋 All Sessions</h3>
+            <% if (sessions.length === 0) { %>
+                <p>No sessions found</p>
+            <% } else { %>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Class</th>
+                            <th>Section</th>
+                            <th>Teacher</th>
+                            <th>Started At</th>
+                            <th>Status</th>
+                            <th>Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% sessions.forEach(session => { %>
+                            <tr>
+                                <td><strong><%= session.subject %></strong></td>
+                                <td><%= session.class %></td>
+                                <td><%= session.section %></td>
+                                <td><%= session.teacher.name %></td>
+                                <td><%= new Date(session.createdAt).toLocaleString() %></td>
+                                <td>
+                                    <span class="badge badge-<%= session.isActive ? 'active' : 'ended' %>">
+                                        <%= session.isActive ? 'ACTIVE' : 'ENDED' %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <% 
+                                        const endTime = session.endedAt || new Date();
+                                        const duration = Math.floor((endTime - session.createdAt) / 1000 / 60);
+                                    %>
+                                    <%= duration %> minutes
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } %>
+        </div>
+    </main>
+</body>
+</html>

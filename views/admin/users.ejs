@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Users</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .admin-nav {
+            background: #2c3e50;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .admin-nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 1.5rem;
+            padding: 0.5rem 1rem;
+            display: inline-block;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .admin-nav a:hover {
+            background: #667eea;
+        }
+        .admin-nav a.active {
+            background: #667eea;
+        }
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #667eea;
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .badge-teacher {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge-student {
+            background: #cfe2ff;
+            color: #084298;
+        }
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .summary-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 5px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .summary-card h3 {
+            color: #667eea;
+            margin: 0 0 0.5rem 0;
+            font-size: 0.9rem;
+        }
+        .summary-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-brand">👥 All Users</h1>
+            <div class="nav-user">
+                <a href="/auth/logout" class="btn btn-small">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-nav">
+        <a href="/admin/dashboard">📊 Dashboard</a>
+        <a href="/admin/users" class="active">👥 Users</a>
+        <a href="/admin/sessions">📅 Sessions</a>
+        <a href="/admin/attendance">✅ Attendance</a>
+    </div>
+
+    <main class="container">
+        <div class="summary">
+            <div class="summary-card">
+                <h3>Total Users</h3>
+                <div class="number"><%= totalUsers %></div>
+            </div>
+            <div class="summary-card">
+                <h3>Teachers</h3>
+                <div class="number"><%= totalTeachers %></div>
+            </div>
+            <div class="summary-card">
+                <h3>Students</h3>
+                <div class="number"><%= totalStudents %></div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h3>📋 All Users (Teachers & Students)</h3>
+            <% if (users.length === 0) { %>
+                <p>No users found</p>
+            <% } else { %>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Roll Number</th>
+                            <th>Department</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% users.forEach(user => { %>
+                            <tr>
+                                <td><strong><%= user.name %></strong></td>
+                                <td><%= user.email %></td>
+                                <td>
+                                    <span class="badge badge-<%= user.role %>">
+                                        <%= user.role.toUpperCase() %>
+                                    </span>
+                                </td>
+                                <td><%= user.rollNumber || 'N/A' %></td>
+                                <td><%= user.department %></td>
+                                <td><%= new Date(user.createdAt).toLocaleDateString() %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } %>
+        </div>
+
+        <div class="table-container" style="margin-top: 2rem;">
+            <h3>👨‍🏫 Teachers</h3>
+            <% if (teachers.length === 0) { %>
+                <p>No teachers found</p>
+            <% } else { %>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Department</th>
+                            <th>Login Credentials</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% teachers.forEach(teacher => { %>
+                            <tr>
+                                <td><strong><%= teacher.name %></strong></td>
+                                <td><%= teacher.email %></td>
+                                <td><%= teacher.department %></td>
+                                <td>
+                                    <div style="font-size: 0.9rem; line-height: 1.5;">
+                                        Email: <code><%= teacher.email %></code><br>
+                                        (Password: Hashed - check database directly if needed)
+                                    </div>
+                                </td>
+                                <td><%= new Date(teacher.createdAt).toLocaleDateString() %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } %>
+        </div>
+
+        <div class="table-container" style="margin-top: 2rem;">
+            <h3>👨‍🎓 Students</h3>
+            <% if (students.length === 0) { %>
+                <p>No students found</p>
+            <% } else { %>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Roll Number</th>
+                            <th>Email</th>
+                            <th>Department</th>
+                            <th>Login Credentials</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% students.forEach(student => { %>
+                            <tr>
+                                <td><strong><%= student.name %></strong></td>
+                                <td><%= student.rollNumber || 'N/A' %></td>
+                                <td><%= student.email %></td>
+                                <td><%= student.department %></td>
+                                <td>
+                                    <div style="font-size: 0.9rem; line-height: 1.5;">
+                                        Email: <code><%= student.email %></code><br>
+                                        (Password: Hashed - check database directly if needed)
+                                    </div>
+                                </td>
+                                <td><%= new Date(student.createdAt).toLocaleDateString() %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } %>
+        </div>
+
+        <div style="background: white; padding: 2rem; border-radius: 10px; margin-top: 2rem;">
+            <h3>📝 Database Access</h3>
+            <p>To view passwords and complete database information, use:</p>
+            <code style="background: #f5f5f5; padding: 1rem; display: block; border-radius: 5px;">
+                GET /admin/users-json
+            </code>
+            <p style="margin-top: 1rem;">
+                This will return all user data including hashed passwords. 
+                <a href="/admin/users-json" target="_blank" style="color: #667eea;">View JSON Data</a>
+            </p>
+        </div>
+    </main>
+</body>
+</html>

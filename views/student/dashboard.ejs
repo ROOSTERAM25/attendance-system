@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-brand">👨‍🎓 Student Portal</h1>
+            <div class="nav-user">
+                <span>Welcome, <%= user.name %></span>
+                <a href="/auth/logout" class="btn btn-small">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <h2>📸 Mark Attendance</h2>
+                <p>Scan QR code to mark your attendance</p>
+                <a href="/student/scan" class="btn btn-primary btn-block">Open Scanner</a>
+            </div>
+
+            <div class="dashboard-card">
+                <h2>📋 View History</h2>
+                <p>Check your attendance records</p>
+                <a href="/student/attendance/history" class="btn btn-secondary btn-block">View History</a>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3>ℹ️ Instructions</h3>
+            <ol>
+                <li>Click "Open Scanner" to access the QR scanner</li>
+                <li>Allow camera and location permissions</li>
+                <li>Scan the QR code displayed by your teacher</li>
+                <li>Ensure you're within college premises</li>
+                <li>Your attendance will be marked automatically</li>
+            </ol>
+        </div>
+    </main>
+</body>
+</html>
